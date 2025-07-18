@@ -6,6 +6,8 @@ Utilise CrewAI pour coordonner tous les agents spécialisés
 import asyncio
 import json
 import logging
+import sys
+import os
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
@@ -20,6 +22,12 @@ from shared.config import AgentConfig
 from shared.redis_manager import RedisManager
 from shared.models import TradingSignal, AgentStatus, SystemEvent
 from shared.metrics import MetricsExporter
+
+# Import conditionnel des agents spécialisés
+try:
+    from market_data_agent import MarketDataAgent
+except ImportError:
+    MarketDataAgent = None
 
 @dataclass
 class AgentTask:
@@ -154,237 +162,137 @@ class MasterAgent:
         })
     
     async def heartbeat_loop(self):
-        """Boucle de heartbeat pour indiquer que l'agent est vivant"""
+        """Boucle de heartbeat pour maintenir le statut de l'agent"""
         while self.status == "running":
             try:
-                # Mettre à jour Redis
                 await self.redis_manager.set_agent_status(self.agent_name, {
                     "status": "running",
                     "last_heartbeat": datetime.now(timezone.utc).isoformat(),
-                    "total_tasks": self.total_decisions,
-                    "successful_tasks": self.successful_decisions,
-                    "failed_tasks": self.failed_decisions
+                    "total_decisions": self.total_decisions,
+                    "successful_decisions": self.successful_decisions,
+                    "failed_decisions": self.failed_decisions
                 })
-                
-                # Mettre à jour les métriques Prometheus
-                self.metrics.update_heartbeat()
-                self.metrics.update_performance(
-                    daily_pnl=0,  # À calculer selon vos données
-                    win_rate=self.successful_decisions / max(self.total_decisions, 1),
-                    active_trades=len(self.active_tasks),
-                    drawdown=0  # À calculer selon vos données
-                )
                 
                 await asyncio.sleep(self.heartbeat_interval)
                 
             except Exception as e:
-                logger.error(f"❌ Erreur dans heartbeat: {str(e)}")
-                self.metrics.record_task("failed")
-                await asyncio.sleep(5)
+                logger.error(f"❌ Erreur heartbeat: {e}")
+                await asyncio.sleep(10)
     
     async def signal_processing_loop(self):
-        """Boucle de traitement des signaux entrants"""
+        """Boucle de traitement des signaux de trading"""
         while self.status == "running":
             try:
-                # Écouter les signaux des agents spécialisés
-                signals = await self.redis_manager.get_pending_signals()
-                
-                for signal in signals:
-                    await self.process_signal(signal)
-                
-                await asyncio.sleep(1)  # Vérification toutes les secondes
+                # Traiter les signaux en attente
+                await self.process_pending_signals()
+                await asyncio.sleep(1)
                 
             except Exception as e:
-                logger.error(f"❌ Erreur dans signal processing: {str(e)}")
+                logger.error(f"❌ Erreur traitement signaux: {e}")
                 await asyncio.sleep(5)
     
     async def agent_monitoring_loop(self):
-        """Surveillance des agents spécialisés"""
+        """Boucle de surveillance des autres agents"""
         while self.status == "running":
             try:
-                # Vérifier l'état de tous les agents
-                agents_status = await self.redis_manager.get_all_agents_status()
-                
-                for agent_name, status in agents_status.items():
-                    if agent_name != self.agent_name:
-                        await self.check_agent_health(agent_name, status)
-                
-                await asyncio.sleep(30)  # Vérification toutes les 30 secondes
+                await self.monitor_agents_health()
+                await asyncio.sleep(30)
                 
             except Exception as e:
-                logger.error(f"❌ Erreur dans agent monitoring: {str(e)}")
+                logger.error(f"❌ Erreur surveillance agents: {e}")
                 await asyncio.sleep(10)
     
     async def decision_making_loop(self):
         """Boucle de prise de décision principale"""
         while self.status == "running":
             try:
-                # Traiter la queue des signaux
-                if self.signal_queue:
-                    signals_batch = self.signal_queue[:10]  # Traiter par batch de 10
-                    self.signal_queue = self.signal_queue[10:]
-                    
-                    decision = await self.make_trading_decision(signals_batch)
-                    
-                    if decision:
-                        await self.execute_decision(decision)
-                
-                await asyncio.sleep(5)  # Décisions toutes les 5 secondes
+                await self.make_trading_decisions()
+                await asyncio.sleep(5)
                 
             except Exception as e:
-                logger.error(f"❌ Erreur dans decision making: {str(e)}")
+                logger.error(f"❌ Erreur prise de décision: {e}")
                 await asyncio.sleep(10)
     
-    async def process_signal(self, signal: Dict[str, Any]):
-        """Traiter un signal entrant"""
+    async def process_pending_signals(self):
+        """Traiter les signaux de trading en attente"""
         try:
-            logger.info(f"📊 Traitement du signal: {signal['symbol']} - {signal['strategy']}")
+            # Récupérer les signaux depuis Redis
+            signals = await self.redis_manager.get_pending_signals()
             
-            # Ajouter le signal à la queue pour traitement
-            self.signal_queue.append(signal)
-            
-            # Mettre à jour les métriques
+            for signal in signals:
+                await self.analyze_signal(signal)
+                
+        except Exception as e:
+            logger.error(f"❌ Erreur traitement signaux: {e}")
+    
+    async def analyze_signal(self, signal: Dict):
+        """Analyser un signal de trading"""
+        try:
             self.total_decisions += 1
             
+            # Logique d'analyse du signal
+            # Ici on peut ajouter des critères de validation
+            
+            logger.info(f"📊 Signal analysé: {signal.get('symbol', 'Unknown')}")
+            self.successful_decisions += 1
+            
         except Exception as e:
-            logger.error(f"❌ Erreur lors du traitement du signal: {str(e)}")
+            logger.error(f"❌ Erreur analyse signal: {e}")
             self.failed_decisions += 1
     
-    async def make_trading_decision(self, signals: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        """Prendre une décision de trading basée sur les signaux"""
+    async def monitor_agents_health(self):
+        """Surveiller la santé des autres agents"""
         try:
-            if not signals:
-                return None
+            # Vérifier le statut des agents
+            agents_status = await self.redis_manager.get_all_agents_status()
             
-            # Créer une tâche pour l'équipe CrewAI
-            decision_task = Task(
-                description=f"""
-                Analyser les signaux de trading suivants et prendre une décision:
-                {json.dumps(signals, indent=2)}
-                
-                Critères à évaluer:
-                1. Qualité des signaux (confiance, cohérence)
-                2. Risque/rendement
-                3. Corrélations entre paires
-                4. Conditions de marché actuelles
-                5. Limites de risque
-                
-                Retourner une décision structurée avec:
-                - Action recommandée (EXECUTE, REJECT, WAIT)
-                - Signaux sélectionnés
-                - Justification
-                - Score de confiance
-                """,
-                agent=self.crew.agents[0]
-            )
-            
-            # Exécuter la tâche
-            result = self.crew.kickoff([decision_task])
-            
-            # Parser le résultat
-            decision = await self.parse_crew_decision(result)
-            
-            if decision and decision.get("action") == "EXECUTE":
-                self.successful_decisions += 1
-                return decision
-            
-            return None
-            
+            for agent_name, status in agents_status.items():
+                if status.get("status") != "running":
+                    logger.warning(f"⚠️ Agent {agent_name} non actif: {status.get('status')}")
+                    
         except Exception as e:
-            logger.error(f"❌ Erreur lors de la prise de décision: {str(e)}")
-            self.failed_decisions += 1
-            return None
+            logger.error(f"❌ Erreur surveillance agents: {e}")
     
-    async def parse_crew_decision(self, crew_result: Any) -> Optional[Dict[str, Any]]:
-        """Parser le résultat de l'équipe CrewAI"""
+    async def make_trading_decisions(self):
+        """Prendre des décisions de trading basées sur les signaux analysés"""
         try:
-            # Extraire la décision du résultat CrewAI
-            # (Implémentation spécifique selon le format de retour)
-            
-            return {
-                "action": "EXECUTE",
-                "signals": [],
-                "justification": "Test decision",
-                "confidence": 0.75,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            }
+            # Logique de décision de trading
+            # Ici on peut implémenter la logique CrewAI pour les décisions complexes
+            pass
             
         except Exception as e:
-            logger.error(f"❌ Erreur lors du parsing de la décision: {str(e)}")
-            return None
-    
-    async def execute_decision(self, decision: Dict[str, Any]):
-        """Exécuter une décision de trading"""
-        try:
-            logger.info(f"🎯 Exécution de la décision: {decision['action']}")
-            
-            # Publier la décision pour les autres agents
-            await self.redis_manager.publish_decision(decision)
-            
-            # Enregistrer l'événement
-            await self.redis_manager.log_system_event({
-                "event_type": "trading.decision_executed",
-                "agent": self.agent_name,
-                "decision": decision,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur lors de l'exécution de la décision: {str(e)}")
-    
-    async def check_agent_health(self, agent_name: str, status: Dict[str, Any]):
-        """Vérifier la santé d'un agent spécialisé"""
-        try:
-            last_heartbeat = datetime.fromisoformat(status.get("last_heartbeat", "1970-01-01T00:00:00+00:00"))
-            time_since_heartbeat = (datetime.now(timezone.utc) - last_heartbeat).total_seconds()
-            
-            if time_since_heartbeat > 60:  # Plus de 1 minute sans heartbeat
-                logger.warning(f"⚠️ Agent {agent_name} n'a pas donné signe de vie depuis {time_since_heartbeat}s")
-                
-                # Essayer de redémarrer l'agent
-                await self.restart_agent(agent_name)
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur lors de la vérification de l'agent {agent_name}: {str(e)}")
-    
-    async def restart_agent(self, agent_name: str):
-        """Redémarrer un agent défaillant"""
-        try:
-            logger.info(f"🔄 Redémarrage de l'agent {agent_name}")
-            
-            # Envoyer un signal de redémarrage
-            await self.redis_manager.send_agent_command(agent_name, {
-                "command": "restart",
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur lors du redémarrage de l'agent {agent_name}: {str(e)}")
+            logger.error(f"❌ Erreur prise de décision trading: {e}")
 
-# Point d'entrée principal
+# Point d'entrée principal avec détection du type d'agent
 async def main():
-    """Point d'entrée principal du Master Agent"""
+    """Point d'entrée principal - détecte et lance le bon type d'agent"""
+    agent_type = os.getenv("AGENT_TYPE", "master").lower()
+    config = AgentConfig.from_env()
     
-    # Configuration
-    config = AgentConfig(
-        name="MasterAgent",
-        type="master",
-        redis_url="redis://localhost:6379",
-        max_concurrent_tasks=10,
-        heartbeat_interval=30
-    )
-    
-    # Créer et démarrer le Master Agent
-    master = MasterAgent(config)
+    logger.info(f"🎯 Lancement de l'agent type: {agent_type}")
     
     try:
-        await master.start()
+        if agent_type == "market" and MarketDataAgent:
+            # Lancer l'agent de données de marché
+            agent = MarketDataAgent(config)
+            await agent.start()
+            
+        elif agent_type in ["master", "strategy", "risk", "performance", "notification"]:
+            # Lancer l'agent master (pour l'instant tous utilisent le même code)
+            agent = MasterAgent(config)
+            await agent.start()
+            
+        else:
+            logger.error(f"❌ Type d'agent inconnu: {agent_type}")
+            sys.exit(1)
+            
     except KeyboardInterrupt:
-        logger.info("🛑 Arrêt demandé par l'utilisateur")
+        logger.info("🛑 Interruption clavier détectée")
     except Exception as e:
-        logger.error(f"❌ Erreur critique: {str(e)}")
+        logger.error(f"❌ Erreur fatale: {e}")
     finally:
-        await master.stop()
+        if 'agent' in locals():
+            await agent.stop()
 
 if __name__ == "__main__":
     asyncio.run(main()) 

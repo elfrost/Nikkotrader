@@ -6,6 +6,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copier les fichiers nécessaires
+COPY market_data_agent.py .
+
 # Créer le répertoire logs
 RUN mkdir -p /app/logs
 
@@ -16,4 +19,4 @@ ENV AGENT_TYPE=market
 # Exposer le port pour Prometheus
 EXPOSE 8080
 
-CMD ["python", "master_agent.py", "--agent-type", "market"]
+CMD ["python", "market_data_agent.py"]

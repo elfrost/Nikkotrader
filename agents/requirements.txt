@@ -1,16 +1,7 @@
-﻿# Core Framework
-crewai==0.28.8
-langchain==0.1.17
-langchain-openai==0.1.7
-openai>=1.13.3
-
-# Database & Cache
+﻿# Core essentials
 redis==5.0.1
 aioredis==2.0.1
-
-# Message Queue
-celery==5.3.4
-kombu==5.3.4
+asyncpg==0.29.0
 
 # Data Processing
 pandas==2.1.4
@@ -20,9 +11,6 @@ numpy==1.26.3
 requests==2.31.0
 httpx==0.25.2
 
-# Async
-asyncio==3.4.3
-
 # Monitoring
 prometheus-client==0.19.0
 
@@ -31,16 +19,7 @@ python-dotenv==1.0.0
 pydantic==2.5.0
 
 # Utils
-typing-extensions==4.8.0
 tenacity==8.2.3
-
-# Web
-fastapi==0.104.1
-uvicorn==0.24.0
-
-# Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
 
 # News Analysis Dependencies
 beautifulsoup4==4.12.2
@@ -48,4 +27,5 @@ aiohttp==3.9.1
 xmltodict==0.13.0
 python-dateutil==2.8.2
 
-loguru
+# Logging
+loguru==0.7.2

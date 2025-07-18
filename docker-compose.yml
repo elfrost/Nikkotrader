@@ -56,8 +56,10 @@ services:
       dockerfile: Dockerfile.master
     depends_on:
       - redis
+      - postgres
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nikkotrader:nikkotrader123@postgres:5432/nikkotrader_v11
       - AGENT_TYPE=master
       - "OPENAI_API_KEY=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"
     volumes:
@@ -72,8 +74,10 @@ services:
       dockerfile: Dockerfile.market
     depends_on:
       - redis
+      - postgres
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nikkotrader:nikkotrader123@postgres:5432/nikkotrader_v11
       - AGENT_TYPE=market
       - MT5_LOGIN=51862230
       - MT5_PASSWORD=AiMwI&gG$26Z8i
@@ -91,9 +95,11 @@ services:
       dockerfile: Dockerfile.strategy
     depends_on:
       - redis
+      - postgres
       - market-data-agent
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nikkotrader:nikkotrader123@postgres:5432/nikkotrader_v11
       - AGENT_TYPE=strategy
       - "OPENAI_API_KEY=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"
     volumes:
@@ -108,8 +114,10 @@ services:
       dockerfile: Dockerfile.risk
     depends_on:
       - redis
+      - postgres
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nikkotrader:nikkotrader123@postgres:5432/nikkotrader_v11
       - AGENT_TYPE=risk
       - "OPENAI_API_KEY=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"
     volumes:
@@ -124,8 +132,10 @@ services:
       dockerfile: Dockerfile.performance
     depends_on:
       - redis
+      - postgres
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nikkotrader:nikkotrader123@postgres:5432/nikkotrader_v11
       - AGENT_TYPE=performance
       - "OPENAI_API_KEY=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"
     volumes:
@@ -140,8 +150,10 @@ services:
       dockerfile: Dockerfile.notification
     depends_on:
       - redis
+      - postgres
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nikkotrader:nikkotrader123@postgres:5432/nikkotrader_v11
       - AGENT_TYPE=notification
       - TELEGRAM_BOT_TOKEN=8069695013:AAFs7M8knILYIS_NacS2QlIGUVEiZWLmlj0
       - TELEGRAM_CHAT_ID=-1002272137953

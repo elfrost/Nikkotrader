@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     
     # Informations générales
     app_name: str = "NIKKOTRADER V11"
-    app_version: str = "11.0.0"
+    app_version: str = "11.1.0"
     description: str = "Système de trading algorithmique multi-agents"
     
     # Environnement
