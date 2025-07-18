@@ -146,32 +146,35 @@ class MetricsExporter:
                 logger.warning(f"Port {self.port} déjà utilisé, tentative port suivant")
                 self.port += 1
             
+            # Créer la classe handler pour Prometheus
             class MetricsHandler(BaseHTTPRequestHandler):
-                def __init__(self, registry):
-                    self.registry = registry
-                    super().__init__()
+                def __init__(self, request, client_address, server, registry=None):
+                    self.registry = registry or self.registry
+                    super().__init__(request, client_address, server)
                 
-                def do_GET(slf):
-                    if slf.path == '/metrics':
-                        slf.send_response(200)
-                        slf.send_header('Content-Type', 'text/plain; charset=utf-8')
-                        slf.end_headers()
-                        metrics_output = generate_latest(self.registry)
-                        slf.wfile.write(metrics_output)
+                def do_GET(self):
+                    """Handler pour les requêtes GET /metrics"""
+                    if self.path == '/metrics':
+                        try:
+                            output = generate_latest(self.registry)
+                            self.send_response(200)
+                            self.send_header('Content-Type', 'text/plain; charset=utf-8') # Changed from CONTENT_TYPE_LATEST to 'text/plain; charset=utf-8'
+                            self.send_header('Content-Length', str(len(output)))
+                            self.end_headers()
+                            self.wfile.write(output)
+                        except Exception as e:
+                            self.send_error(500, f"Error generating metrics: {e}")
                     else:
-                        slf.send_response(404)
-                        slf.end_headers()
+                        self.send_error(404, "Not Found")
                 
-                def log_message(slf, format, *args):
+                def log_message(self, format, *args):
                     # Supprimer les logs HTTP pour éviter le spam
                     pass
             
+            # Factory pour passer le registry
             def handler_factory(registry):
-                def handler(*args, **kwargs):
-                    MetricsHandler.__init__ = lambda slf, *a, **k: BaseHTTPRequestHandler.__init__(slf, *a, **k)
-                    h = MetricsHandler(registry)
-                    h.registry = registry
-                    return h
+                def handler(request, client_address, server):
+                    return MetricsHandler(request, client_address, server, registry)
                 return handler
             
             self.server = HTTPServer(('0.0.0.0', self.port), handler_factory(self.registry))

@@ -1,420 +1,120 @@
 {
-  "dashboard": {
-    "id": null,
-    "title": "📊 NIKKOTRADER V11 - Strategy Performance",
-    "tags": ["nikkotrader", "strategies", "binary-options"],
-    "style": "dark",
-    "timezone": "browser",
-    "editable": true,
-    "hideControls": false,
-    "graphTooltip": 1,
-    "time": {
-      "from": "now-24h",
-      "to": "now"
-    },
-    "timepicker": {
-      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
-      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
-    },
-    "refresh": "30s",
-    "version": 1,
-    "panels": [
-      {
-        "id": 1,
-        "title": "🎯 Strategy Win Rates (Last 24h)",
-        "type": "stat",
-        "targets": [
-          {
-            "expr": "avg by (strategy) (rate(nikkotrader_trades_total{result=\"WIN\"}[1h]) / rate(nikkotrader_trades_total[1h]) * 100)",
-            "legendFormat": "{{strategy}}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "percent",
-            "min": 0,
-            "max": 100,
-            "thresholds": {
-              "steps": [
-                {"color": "red", "value": 0},
-                {"color": "yellow", "value": 60},
-                {"color": "green", "value": 70}
-              ]
-            },
-            "mappings": []
-          }
-        },
-        "options": {
-          "colorMode": "background",
-          "orientation": "auto",
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"],
-            "fields": ""
-          },
-          "textMode": "auto"
-        },
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
-      },
-      {
-        "id": 2,
-        "title": "📈 Trades by Strategy (Hourly)",
-        "type": "bargauge",
-        "targets": [
-          {
-            "expr": "sum by (strategy) (rate(nikkotrader_trades_total[1h]) * 3600)",
-            "legendFormat": "{{strategy}}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "short",
-            "thresholds": {
-              "steps": [
-                {"color": "green", "value": 0},
-                {"color": "yellow", "value": 10},
-                {"color": "red", "value": 20}
-              ]
-            }
-          }
-        },
-        "options": {
-          "displayMode": "list",
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"],
-            "fields": ""
-          }
-        },
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
-      },
-      {
-        "id": 3,
-        "title": "⏰ Performance by Timeframe",
-        "type": "table",
-        "targets": [
-          {
-            "expr": "avg by (strategy) (nikkotrader_signal_confidence)",
-            "legendFormat": "Confidence",
-            "refId": "A"
-          },
-          {
-            "expr": "avg by (strategy) (rate(nikkotrader_trades_total{result=\"WIN\"}[6h]) / rate(nikkotrader_trades_total[6h]) * 100)",
-            "legendFormat": "Win Rate",
-            "refId": "B"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "custom": {
-              "align": "auto",
-              "displayMode": "auto"
-            },
-            "mappings": [],
-            "thresholds": {
-              "steps": [
-                {"color": "green", "value": 0},
-                {"color": "red", "value": 80}
-              ]
-            }
-          }
-        },
-        "options": {
-          "showHeader": true
-        },
-        "gridPos": {"h": 9, "w": 24, "x": 0, "y": 8}
-      },
-      {
-        "id": 4,
-        "title": "📊 Signal Confidence Distribution",
-        "type": "histogram",
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.95, nikkotrader_signal_confidence)",
-            "legendFormat": "95th percentile",
-            "refId": "A"
-          },
-          {
-            "expr": "histogram_quantile(0.75, nikkotrader_signal_confidence)",
-            "legendFormat": "75th percentile",
-            "refId": "B"
-          },
-          {
-            "expr": "histogram_quantile(0.50, nikkotrader_signal_confidence)",
-            "legendFormat": "Median",
-            "refId": "C"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "percent"
-          }
-        },
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 17}
-      },
-      {
-        "id": 5,
-        "title": "🚀 Signal Generation Rate",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "rate(nikkotrader_signals_total[5m]) * 60",
-            "legendFormat": "{{strategy}} - {{symbol}}",
-            "refId": "A"
-          }
-        ],
-        "yAxes": [
-          {
-            "label": "Signals per minute",
-            "min": 0
-          }
-        ],
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 17}
-      },
-      {
-        "id": 6,
-        "title": "💰 P&L by Strategy (Daily)",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "sum by (strategy) (nikkotrader_daily_pnl)",
-            "legendFormat": "{{strategy}}",
-            "refId": "A"
-          }
-        ],
-        "yAxes": [
-          {
-            "label": "P&L"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 25}
-      },
-      {
-        "id": 7,
-        "title": "⚡ Trade Expiry Distribution",
-        "type": "piechart",
-        "targets": [
-          {
-            "expr": "sum by (strategy) (rate(nikkotrader_trade_expiry_minutes[1h]))",
-            "legendFormat": "{{strategy}}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"],
-            "fields": ""
-          },
-          "pieType": "pie",
-          "tooltip": {
-            "mode": "single"
-          },
-          "legend": {
-            "displayMode": "list",
-            "placement": "right"
-          }
-        },
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 25}
-      },
-      {
-        "id": 8,
-        "title": "🎲 Strategy Risk Metrics",
-        "type": "table",
-        "targets": [
-          {
-            "expr": "avg by (strategy) (nikkotrader_drawdown_percentage)",
-            "legendFormat": "Max Drawdown %",
-            "refId": "A"
-          },
-          {
-            "expr": "count by (strategy) (nikkotrader_active_trades)",
-            "legendFormat": "Active Trades",
-            "refId": "B"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "custom": {
-              "align": "center",
-              "displayMode": "color-background"
-            },
-            "thresholds": {
-              "steps": [
-                {"color": "green", "value": 0},
-                {"color": "yellow", "value": 10},
-                {"color": "red", "value": 20}
-              ]
-            }
-          }
-        },
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 33}
-      },
-      {
-        "id": 9,
-        "title": "🔥 Top Performing Pairs by Strategy",
-        "type": "heatmap",
-        "targets": [
-          {
-            "expr": "sum by (strategy, symbol) (rate(nikkotrader_trades_total{result=\"WIN\"}[6h]) / rate(nikkotrader_trades_total[6h]))",
-            "legendFormat": "{{strategy}} - {{symbol}}",
-            "refId": "A"
-          }
-        ],
-        "heatmap": {
-          "xBucketSize": null,
-          "yBucketSize": null,
-          "xBucketNumber": null,
-          "yBucketNumber": null
-        },
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 41}
-      },
-      {
-        "id": 10,
-        "title": "⏱️ Optimal Trading Hours",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "avg_over_time(sum by (hour) (rate(nikkotrader_trades_total{result=\"WIN\"}[1h]))[24h:1h])",
-            "legendFormat": "Win Rate by Hour",
-            "refId": "A"
-          }
-        ],
-        "xAxis": {
-          "show": true,
-          "mode": "time"
-        },
-        "yAxes": [
-          {
-            "label": "Win Rate %",
-            "min": 0,
-            "max": 100
-          }
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 49}
-      },
-      {
-        "id": 11,
-        "title": "📋 Strategy Health Summary",
-        "type": "stat",
-        "targets": [
-          {
-            "expr": "count(count by (strategy) (nikkotrader_trades_total))",
-            "legendFormat": "Active Strategies",
-            "refId": "A"
-          },
-          {
-            "expr": "avg(avg by (strategy) (rate(nikkotrader_trades_total{result=\"WIN\"}[1h]) / rate(nikkotrader_trades_total[1h])))",
-            "legendFormat": "Avg Win Rate",
-            "refId": "B"
-          },
-          {
-            "expr": "sum(rate(nikkotrader_trades_total[1h]) * 3600)",
-            "legendFormat": "Trades/Hour",
-            "refId": "C"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "short",
-            "thresholds": {
-              "steps": [
-                {"color": "green", "value": 0},
-                {"color": "yellow", "value": 5},
-                {"color": "red", "value": 8}
-              ]
-            }
-          }
-        },
-        "options": {
-          "colorMode": "background",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto",
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"],
-            "fields": ""
-          },
-          "textMode": "auto"
-        },
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 49}
-      }
-    ],
-    "annotations": {
-      "list": [
+  "id": null,
+  "title": "📊 NIKKOTRADER V11 - Strategy Performance",
+  "tags": ["nikkotrader", "strategies", "binary-options"],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "graphTooltip": 1,
+  "schemaVersion": 27,
+  "version": 1,
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+  },
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "🎯 Strategy Win Rates (Last 24h)",
+      "type": "stat",
+      "targets": [
         {
-          "builtIn": 1,
-          "datasource": "-- Grafana --",
-          "enable": true,
-          "hide": true,
-          "iconColor": "rgba(0, 211, 255, 1)",
-          "name": "Annotations & Alerts",
-          "type": "dashboard"
+          "expr": "avg by (strategy) (rate(nikkotrader_trades_total{result=\"WIN\"}[1h]) / rate(nikkotrader_trades_total[1h]) * 100)",
+          "legendFormat": "{{strategy}}",
+          "refId": "A"
         }
-      ]
-    },
-    "templating": {
-      "list": [
-        {
-          "allValue": null,
-          "current": {
-            "text": "All",
-            "value": "$__all"
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 60},
+              {"color": "green", "value": 70}
+            ]
           },
-          "datasource": "Prometheus",
-          "definition": "label_values(nikkotrader_trades_total, strategy)",
-          "hide": 0,
-          "includeAll": true,
-          "label": "Strategy",
-          "multi": true,
-          "name": "strategy",
-          "options": [],
-          "query": "label_values(nikkotrader_trades_total, strategy)",
-          "refresh": 1,
-          "regex": "",
-          "skipUrlSync": false,
-          "sort": 0,
-          "tagValuesQuery": "",
-          "tags": [],
-          "tagsQuery": "",
-          "type": "query",
-          "useTags": false
-        },
-        {
-          "allValue": null,
-          "current": {
-            "text": "All",
-            "value": "$__all"
-          },
-          "datasource": "Prometheus",
-          "definition": "label_values(nikkotrader_trades_total, symbol)",
-          "hide": 0,
-          "includeAll": true,
-          "label": "Symbol",
-          "multi": true,
-          "name": "symbol",
-          "options": [],
-          "query": "label_values(nikkotrader_trades_total, symbol)",
-          "refresh": 1,
-          "regex": "",
-          "skipUrlSync": false,
-          "sort": 0,
-          "type": "query"
+          "mappings": []
         }
-      ]
+      },
+      "options": {
+        "colorMode": "background",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+    },
+    {
+      "id": 2,
+      "title": "📈 Trades by Strategy (Hourly)",
+      "type": "bargauge",
+      "targets": [
+        {
+          "expr": "sum by (strategy) (rate(nikkotrader_trades_total[1h]) * 3600)",
+          "legendFormat": "{{strategy}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": 0},
+              {"color": "yellow", "value": 10},
+              {"color": "red", "value": 20}
+            ]
+          }
+        }
+      },
+      "options": {
+        "displayMode": "list",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
     }
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(nikkotrader_trades_total, strategy)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Strategy",
+        "multi": true,
+        "name": "strategy",
+        "options": [],
+        "query": "label_values(nikkotrader_trades_total, strategy)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   }
 } 
