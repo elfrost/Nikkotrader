@@ -78,10 +78,11 @@ class Settings(BaseSettings):
             "strategies": ["Breakout", "Pullback", "Range", "Scalping", "MeanReversion", "Consolidation", "Divergence", "NewsImpact", "SessionBreakout"],
             "total_strategies": 9,
             "timeframe_distribution": {
-                "short_term_3_5min": 5,
-                "medium_term_10_15min": 3, 
-                "long_term_30min": 1
-            }
+                "short_term_3_5min": 6,  # 67% (Scalping, Consolidation, Breakout, Pullback, MeanReversion, Range)
+                "medium_term_10_15min": 2, # 22% (Divergence, NewsImpact)
+                "long_term_30min": 1      # 11% (SessionBreakout)
+            },
+            "distribution_optimal": "67% / 22% / 11%"
         },
         "risk": {
             "name": "RiskManagementAgent",

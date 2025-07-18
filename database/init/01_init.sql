@@ -47,14 +47,17 @@ INSERT INTO strategies (id, name, version, description, config, created_at, crea
 (
     uuid_generate_v4(),
     'Range',
-    'v1.0.0',
-    'Stratégie de trading en range',
+    'v1.0.1',
+    'Stratégie de trading en range - AJUSTÉ 10min → 5min pour distribution optimale',
     '{
         "max_adx": 20,
         "range_periods": 20,
         "bounce_confirmation": true,
         "confidence_base": 65,
-        "expiry_minutes": 10
+        "expiry_minutes": 5,
+        "range_size_min": 0.0008,
+        "range_size_max": 0.002,
+        "market_hours_filter": true
     }',
     NOW(),
     'system',

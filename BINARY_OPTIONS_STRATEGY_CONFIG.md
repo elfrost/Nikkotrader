@@ -35,16 +35,23 @@
 }
 ```
 
-### **3. Range Trading (10 min)**
+### **3. Range Trading (5 min)** ✅ **AJUSTÉ**
 ```json
 {
   "max_adx": 20,
   "range_periods": 20,
   "bounce_confirmation": true,
   "confidence_base": 65,
-  "expiry_minutes": 10
+  "expiry_minutes": 5,
+  "range_size_min": 0.0008,
+  "range_size_max": 0.002,
+  "market_hours_filter": true
 }
 ```
+**Optimisations :**
+- ✅ **Timeframe ajusté** 10min → 5min pour distribution optimale
+- ✅ **Filtres range** - Taille minimum et maximum
+- ✅ **Heures de marché** - Évite les périodes calmes
 
 ### **4. Scalping Ultra-Court (3 min)**
 ```json
@@ -125,22 +132,26 @@
 ```
 **Spécialité :** Breakouts aux ouvertures de sessions majeures
 
-## ⏰ **Distribution Réelle des Timeframes**
+## ⏰ **Distribution OPTIMALE des Timeframes** ✅
 
-### **Court Terme (3-5 min) - 55.6% des stratégies (5/9)**
+### **Court Terme (3-5 min) - 66.7% des stratégies (6/9)** ✅
 - Scalping (3 min) - Ultra haute fréquence
 - Consolidation (3 min) - Patterns courts
 - Breakout (5 min) - Cassures rapides  
 - Pullback (5 min) - Retracements Fibonacci
 - Mean Reversion (5 min) - Retour moyenne
+- **Range (5 min)** - ✅ **AJUSTÉ** Trading en range
 
-### **Moyen Terme (10-15 min) - 33.3% des stratégies (3/9)**
-- Range (10 min) - Trading en range
+### **Moyen Terme (10-15 min) - 22.2% des stratégies (2/9)** ✅
 - Divergence (10 min) - Signaux techniques
 - News Impact (15 min) - Nouvelles économiques
 
-### **Long Terme (30 min) - 11.1% des stratégies (1/9)**
+### **Long Terme (30 min) - 11.1% des stratégies (1/9)** ✅
 - Session Breakout (30 min) - Ouvertures sessions
+
+## 🎯 **DISTRIBUTION PARFAITE ATTEINTE !**
+
+**67% / 22% / 11%** ✅ (approximation due aux contraintes 9 stratégies)
 
 ## 🔄 **Distribution Optimisée pour 67%/22%/11%**
 
