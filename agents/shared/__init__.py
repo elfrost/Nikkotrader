@@ -1,0 +1,1 @@
+# Module shared temporaire pour NIKKOTRADER V11 

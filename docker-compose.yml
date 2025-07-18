@@ -1,0 +1,208 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: nikkotrader_v11
+      POSTGRES_USER: nikkotrader
+      POSTGRES_PASSWORD: nikkotrader123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nikkotrader"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis pour cache et communication inter-agents
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # API Backend (FastAPI) - Temporairement désactivé
+  # api:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_started
+  #   environment:
+  #     - DATABASE_URL=postgresql://nikkotrader:nikkotrader123@postgres:5432/nikkotrader_v11
+  #     - REDIS_URL=redis://redis:6379
+  #     - ENVIRONMENT=development
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/__pycache__
+  #   restart: unless-stopped
+
+  # Master Agent (Orchestrateur)
+  master-agent:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile.master
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENT_TYPE=master
+      - "OPENAI_API_KEY=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"
+    volumes:
+      - ./agents:/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Market Data Agent
+  market-data-agent:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile.market
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENT_TYPE=market
+      - MT5_LOGIN=51862230
+      - MT5_PASSWORD=AiMwI&gG$26Z8i
+      - MT5_SERVER=ICMarkets-Demo
+      - "OPENAI_API_KEY=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"
+    volumes:
+      - ./agents:/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Strategy Agents (Breakout, Pullback, etc.)
+  strategy-agents:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile.strategy
+    depends_on:
+      - redis
+      - market-data-agent
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENT_TYPE=strategy
+      - "OPENAI_API_KEY=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"
+    volumes:
+      - ./agents:/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Risk Management Agent
+  risk-agent:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile.risk
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENT_TYPE=risk
+      - "OPENAI_API_KEY=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"
+    volumes:
+      - ./agents:/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Performance Agent
+  performance-agent:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile.performance
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENT_TYPE=performance
+      - "OPENAI_API_KEY=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"
+    volumes:
+      - ./agents:/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Notification Agent
+  notification-agent:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile.notification
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENT_TYPE=notification
+      - TELEGRAM_BOT_TOKEN=8069695013:AAFs7M8knILYIS_NacS2QlIGUVEiZWLmlj0
+      - TELEGRAM_CHAT_ID=-1002272137953
+      - "OPENAI_API_KEY=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"
+    volumes:
+      - ./agents:/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # ===== MONITORING STACK =====
+  
+  # Prometheus - Collecte des métriques
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+
+  # Grafana - Dashboards de monitoring
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # RabbitMQ - Communication inter-agents avancée
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=nikkotrader
+      - RABBITMQ_DEFAULT_PASS=nikkotrader123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  rabbitmq_data: 

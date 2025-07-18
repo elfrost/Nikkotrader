@@ -1,0 +1,36 @@
+# NIKKOTRADER V11 - Architecture et Structure
+
+## 🏗️ Architecture Système
+
+NIKKOTRADER V11 est un système de trading algorithmique multi-agents spécialisé en **options binaires** avec architecture Docker.
+
+### 📁 Structure Principale
+- **agents/** : Agents de trading (Master, Market Data, Strategy, Risk, Notification)
+- **backend/** : API FastAPI + modèles PostgreSQL
+- **monitoring/** : Prometheus + Grafana + alertes
+- **database/** : Scripts d'initialisation PostgreSQL
+- **scripts/** : Scripts de démarrage (start.bat/start.sh)
+
+### 🤖 Agents Principaux
+- **MasterAgent** : Orchestrateur principal ([master_agent.py](mdc:agents/master_agent.py))
+- **MarketDataAgent** : Collecte données MT5 temps réel
+- **StrategyAgents** : 9 stratégies options binaires
+- **RiskAgent** : Gestion risques (mode permissif forward testing)
+- **NewsImpactAgent** : Trading sur nouvelles économiques ([news_strategy_agent.py](mdc:agents/news_system/news_strategy_agent.py))
+
+### 📊 Configuration
+- **Configuration principale** : [config.py](mdc:backend/core/config.py)
+- **Base de données** : [database.py](mdc:backend/models/database.py)
+- **Docker Compose** : [docker-compose.yml](mdc:docker-compose.yml)
+
+### 🎯 Mode Actuel
+- **Forward Testing** activé (compte démo uniquement)
+- **Risk Agent permissif** (collecte maximale de données)
+- **9 stratégies optimisées** pour options binaires
+
+### 📈 Versioning
+- **Programme** : NIKKOTRADER V11.0.0
+- **Stratégies** : Versioning automatique v{major}.{minor}.{patch}
+- **Database** : Conservation de toutes les versions
+alwaysApply: false
+---

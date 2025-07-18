@@ -1,0 +1,142 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "NIKKOTRADER V11 - Overview",
+    "tags": ["nikkotrader", "trading", "agents"],
+    "timezone": "browser",
+    "refresh": "5s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Agents Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"nikkotrader-agents\"}",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Trading Signals (Last Hour)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(nikkotrader_signals_total[5m])",
+            "legendFormat": "Signals per second"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Daily P&L",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "nikkotrader_daily_pnl",
+            "legendFormat": "P&L ($)"
+          }
+        ],
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 0,
+          "y": 8
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": -100
+                },
+                {
+                  "color": "yellow",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 100
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Win Rate (%)",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "nikkotrader_win_rate",
+            "legendFormat": "Win Rate"
+          }
+        ],
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 8,
+          "y": 8
+        }
+      },
+      {
+        "id": 5,
+        "title": "Active Trades",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "nikkotrader_active_trades",
+            "legendFormat": "Active"
+          }
+        ],
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 16,
+          "y": 8
+        }
+      }
+    ]
+  }
+} 

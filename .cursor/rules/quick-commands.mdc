@@ -1,0 +1,137 @@
+# Commandes Rapides et Troubleshooting
+
+## 🚀 Démarrage Système
+
+### ⚡ Commandes Principales
+```bash
+# Démarrage complet
+scripts\start.bat          # Windows
+./scripts/start.sh          # Linux/Mac
+
+# Gestion Docker
+docker-compose up -d        # Démarrer tous services
+docker-compose down         # Arrêter tous services
+docker-compose restart      # Redémarrer
+docker-compose ps           # État des services
+```
+
+### 📊 Interface Principale
+- **URL unique** : `http://localhost:3001`
+- **Login** : admin / admin123
+- **Navigation** : Dashboards → NIKKOTRADER V11 → Overview
+
+## 🔍 Monitoring et Debug
+
+### 📜 Logs Temps Réel
+```bash
+# Tous les logs
+docker-compose logs -f
+
+# Logs spécifiques
+docker-compose logs -f master-agent
+docker-compose logs -f strategy-agents
+docker-compose logs -f market-data-agent
+
+# Filtres utiles
+docker-compose logs -f | grep "TRADE"
+docker-compose logs -f | grep "SIGNAL"
+docker-compose logs -f | grep "ERROR"
+```
+
+### 🎯 Vérifications Santé
+```bash
+# Statut services
+curl http://localhost:8000/health
+curl http://localhost:8000/api/v1/agents/status
+
+# Métriques performance
+curl http://localhost:8000/api/v1/performance/current
+curl http://localhost:8000/api/v1/strategies/performance
+
+# Test connexion MT5
+docker-compose exec market-data-agent python test_mt5_connection.py
+```
+
+## 🛠️ Troubleshooting Commun
+
+### ❌ Services Ne Démarrent Pas
+```bash
+# Vérifier Docker Desktop
+docker info
+
+# Rebuild images
+docker-compose build --no-cache
+docker-compose up -d
+
+# Vérifier ports occupés
+netstat -an | findstr :3001    # Windows
+lsof -i :3001                  # Linux/Mac
+```
+
+### 📊 Pas de Données dans Grafana
+```bash
+# Vérifier Prometheus
+curl http://localhost:9090/targets
+
+# Redémarrer monitoring
+docker-compose restart prometheus grafana
+
+# Vérifier métriques agents
+curl http://localhost:8080/metrics  # Sur chaque agent
+```
+
+### 🔌 MT5 Non Connecté
+```bash
+# Vérifier configuration
+docker-compose exec market-data-agent env | grep MT5
+
+# Logs connexion MT5
+docker-compose logs market-data-agent | grep "MT5"
+
+# Test manuel
+docker-compose exec market-data-agent python -c "
+import MetaTrader5 as mt5
+print('MT5 Available:', mt5.initialize())
+"
+```
+
+### 💾 Base de Données
+```bash
+# Connexion PostgreSQL
+docker-compose exec postgres psql -U nikkotrader -d nikkotrader_v11
+
+# Vérifier stratégies
+\c nikkotrader_v11
+SELECT name, version, is_active FROM strategies;
+
+# Vérifier agents
+SELECT name, type, status FROM agents;
+```
+
+## 📈 Performance et Optimisation
+
+### 🎯 Métriques Clés à Surveiller
+- **Agent Status** : Tous verts dans Grafana
+- **Win Rate Global** : > 70% objectif
+- **Trades Actifs** : < 20 simultanés
+- **Drawdown** : < 50% (mode forward testing)
+- **Signaux/Heure** : Selon stratégie (2-10)
+
+### ⚡ Optimisations Recommandées
+```bash
+# Nettoyer logs anciens
+docker system prune -f
+
+# Redémarrer services lourds
+docker-compose restart postgres redis
+
+# Vérifier ressources
+docker stats
+
+# Backup base de données
+docker-compose exec postgres pg_dump -U nikkotrader nikkotrader_v11 > backup.sql
+```
+description:
+globs:
+alwaysApply: false
+---

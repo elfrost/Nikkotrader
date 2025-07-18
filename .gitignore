@@ -1,0 +1,115 @@
+# NIKKOTRADER V11 - GitIgnore
+
+## Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+## Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+## IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+## OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+## Logs et Données
+logs/
+*.log
+data/
+*.csv
+*.json.bak
+
+## Docker
+.dockerignore
+
+## Database
+*.db
+*.sqlite3
+*.sql.bak
+
+## Trading Données Sensibles
+# Ne PAS commiter les données de trading réelles
+trades_real/
+backups/
+*.dump
+
+## Monitoring Données
+monitoring/data/
+grafana_data/
+prometheus_data/
+
+## Credentials (Sécurité)
+.env.prod
+.env.production
+secrets/
+credentials/
+*.key
+*.pem
+
+## Temporary Files
+tmp/
+temp/
+cache/
+.cache/
+
+## Node.js (si frontend ajouté)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+## MT5 Logs
+*.log
+experts.log
+terminal.log
+
+## Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+## Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+## MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json 

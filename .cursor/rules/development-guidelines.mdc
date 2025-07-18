@@ -1,0 +1,87 @@
+# Guidelines de Développement NIKKOTRADER V11
+
+## 🔧 Préférences Utilisateur
+
+### ✅ Code Existant Prioritaire
+- **Modifier le code existant** plutôt que créer de nouveaux scripts
+- **Utiliser** [optimizer.py](mdc:backend/optimizer) existant vs créer de nouveaux
+- **Nettoyer** les scripts inutilisés après modifications
+- **Intégrer** dans l'architecture existante
+
+### 🚫 Éviter les Versions Simplifiées  
+- **NE PAS** créer de versions "ultra-simple" ou "basique"
+- **Utiliser** le système intégré complet uniquement
+- **Maintenir** la complexité appropriée au trading professionnel
+
+### 📝 Langue de Réponse
+- **Toujours répondre en français** selon les règles utilisateur
+- **Documentation** en français avec exemples techniques en anglais
+- **Commentaires code** en français quand possible
+
+## 🏗️ Architecture et Standards
+
+### 🐳 Conteneurisation Docker
+- **Services isolés** : Un agent = un container
+- **Variables d'environnement** : .env centralisé  
+- **Volumes persistants** : PostgreSQL, Redis, Grafana
+- **Restart policies** : unless-stopped pour production
+
+### 📊 Structure des Agents
+```python
+class BaseAgent:
+    def __init__(self, config: AgentConfig):
+        self.config = config
+        self.metrics = MetricsExporter()
+        self.redis_client = Redis()
+    
+    async def start(self):
+        # Initialisation
+    
+    async def process_signal(self, signal):
+        # Logique métier
+        
+    async def stop(self):
+        # Nettoyage
+```
+
+### 🔄 Versioning et Déploiement
+- **Versioning sémantique** : v{major}.{minor}.{patch}
+- **Backup automatique** avant modifications
+- **Tests A/B** nouvelles vs anciennes versions
+- **Rollback automatique** si performance < -5%
+
+### 📈 Métriques et Monitoring
+- **Prometheus** : Toutes les métriques business
+- **Grafana** : Dashboards temps réel uniquement
+- **Logs structurés** : JSON avec timestamp, agent, level
+- **Alertes** : Telegram pour événements critiques
+
+## 🎯 Spécificités Options Binaires
+
+### ⚡ Timeframes Optimisés
+- **3-5min** : 55.6% des stratégies (haute fréquence)
+- **10-15min** : 33.3% des stratégies (équilibre)  
+- **30min** : 11.1% des stratégies (sélectivité)
+
+### 📊 Configuration Stratégies
+```json
+{
+  "confidence_base": 60-80,
+  "expiry_minutes": 3-30,
+  "market_hours_filter": true,
+  "volatility_min": 0.0005,
+  "spread_max": 3,
+  "avoid_news_minutes": 15-30,
+  "win_rate_target": 70
+}
+```
+
+### 🛡️ Risk Management
+- **Mode forward testing** : Permissif (50% drawdown max)
+- **Compte démo uniquement** : ICMarkets 51862230
+- **Collecte de données** prioritaire sur protection capital
+- **500 trades/jour max** pour statistiques robustes
+description:
+globs:
+alwaysApply: false
+---

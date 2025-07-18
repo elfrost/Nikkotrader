@@ -1,0 +1,78 @@
+# Configuration Base de Données et Modèles
+
+## 🗄️ Architecture PostgreSQL
+
+### 📊 Tables Principales
+Configuration dans [database.py](mdc:backend/models/database.py) :
+
+- **strategies** : Stratégies avec versioning automatique
+- **agents** : Agents avec métriques performance  
+- **trades** : Trades avec résultats et P&L
+- **market_data** : Données de marché temps réel
+- **configurations** : Paramètres système versionnés
+- **system_events** : Événements et logs système
+
+### 🔧 Stratégies avec Versioning
+```sql
+CREATE TABLE strategies (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100),           -- Ex: "Breakout"
+    version VARCHAR(20),         -- Ex: "v1.0.0"
+    description TEXT,
+    config JSON,                 -- Configuration complète
+    created_at TIMESTAMP,
+    is_active BOOLEAN           -- Seule version active
+);
+```
+
+### 📈 Données Actuelles
+Initialisation dans [01_init.sql](mdc:database/init/01_init.sql) :
+- **9 stratégies** : Toutes en v1.0.0 (Breakout, NewsImpact, etc.)
+- **11 agents** : Master, Market Data, 9 Strategy Agents
+- **Configuration forward testing** : Mode permissif activé
+
+### 🎯 Vues Optimisées
+```sql
+-- Vue stratégies actives avec performance
+CREATE VIEW v_active_strategies AS
+SELECT name, version, win_rate, total_trades
+FROM strategies s 
+LEFT JOIN trades t ON s.id = t.strategy_id
+WHERE s.is_active = true;
+
+-- Vue statut agents
+CREATE VIEW v_agent_status AS  
+SELECT name, type, status, success_rate
+FROM agents;
+```
+
+### 📊 Configuration Forward Testing
+```json
+{
+  "demo_account_only": true,
+  "max_daily_trades": 500,
+  "max_concurrent_positions": 20,
+  "max_drawdown": 0.50,
+  "risk_mode": "permissive",
+  "data_collection_priority": true
+}
+```
+
+### 🔄 Versioning Automatique
+- **strategy_versioning.enabled** : true
+- **auto_backup** : true  
+- **max_versions** : 10
+- **format** : "v{major}.{minor}.{patch}"
+
+### 🎛️ Connexion MT5
+```json
+{
+  "mt5_login": 51862230,
+  "mt5_server": "ICMarkets-Demo", 
+  "mt5_path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+}
+```
+description:
+globs:
+alwaysApply: false
+---

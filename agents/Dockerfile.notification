@@ -1,0 +1,19 @@
+﻿FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copier et installer les dépendances
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Créer le répertoire logs
+RUN mkdir -p /app/logs
+
+# Variables d'environnement
+ENV PYTHONPATH=/app
+ENV AGENT_TYPE=notification
+
+# Exposer le port pour Prometheus
+EXPOSE 8080
+
+CMD ["python", "master_agent.py", "--agent-type", "notification"]

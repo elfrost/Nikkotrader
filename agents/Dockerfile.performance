@@ -1,0 +1,17 @@
+﻿FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY master_agent.py .
+
+# Variables d'environnement
+ENV PYTHONPATH=/app
+ENV AGENT_TYPE=performance
+
+# Exposer le port pour Prometheus
+EXPOSE 8080
+
+CMD ["python", "master_agent.py", "--agent-type", "performance"]

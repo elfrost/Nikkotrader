@@ -1,0 +1,47 @@
+# Développement des Stratégies de Trading
+
+## 🎯 9 Stratégies Optimisées Options Binaires
+
+### 📊 Distribution Timeframes
+- **Court terme (3-5min) - 55.6%** : Scalping, Consolidation, Breakout, Pullback, MeanReversion  
+- **Moyen terme (10-15min) - 33.3%** : Range, Divergence, NewsImpact
+- **Long terme (30min) - 11.1%** : SessionBreakout
+
+### 🔧 Configuration Stratégies
+Toutes les stratégies suivent le format dans [database/init/01_init.sql](mdc:database/init/01_init.sql) :
+```json
+{
+  "confidence_base": 60-80,
+  "expiry_minutes": 3-30,
+  "market_hours_filter": true,
+  "volatility_min": 0.0005,
+  "spread_max": 3,
+  "avoid_news_minutes": 15-30
+}
+```
+
+### 📈 Versioning Automatique
+- **Détection automatique** des modifications
+- **Backup de l'ancienne version** avant mise à jour
+- **Comparaison performance** nouvelle vs ancienne
+- **Rollback automatique** si dégradation > 5%
+
+### 🎯 Métriques Clés
+- **Win Rate cible** : 70%+ global
+- **Confidence minimale** : 60%
+- **Signaux max/heure** : Selon stratégie (2-10)
+- **Paires optimisées** : EURUSD, GBPUSD, USDJPY prioritaires
+
+### 🔍 NewsImpact Spécialisé
+- **Sources** : ForexFactory, TradingEconomics (fallback simulation)
+- **Blocages préventifs** : 15-30min avant news importantes
+- **Win rate théorique** : 78%
+- **Configuration** : [news_config.py](mdc:agents/news_system/news_config.py)
+
+### ⚠️ Mode Forward Testing
+- **Compte DÉMO uniquement** (ICMarkets 51862230)
+- **Risk Agent permissif** (50% max drawdown)
+- **Collecte maximale données** (500 trades/jour)
+- **Pas de capital réel** engagé
+alwaysApply: false
+---

@@ -1,0 +1,71 @@
+groups:
+  - name: nikkotrader_alerts
+    rules:
+      # Agent Health Alerts
+      - alert: AgentDown
+        expr: up{job="nikkotrader-agents"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "NIKKOTRADER Agent is down"
+          description: "Agent {{ $labels.instance }} has been down for more than 30 seconds."
+
+      # Trading Performance Alerts
+      - alert: HighDrawdown
+        expr: nikkotrader_drawdown_percentage > 8
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Drawdown Detected"
+          description: "Current drawdown is {{ $value }}%, approaching maximum threshold."
+
+      - alert: ExcessiveLosses
+        expr: nikkotrader_daily_pnl < -500
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Excessive Daily Losses"
+          description: "Daily P&L is {{ $value }}, exceeding loss limits."
+
+      # System Resource Alerts
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory Usage"
+          description: "Container {{ $labels.name }} memory usage is above 80%."
+
+      # Redis Connection Alert
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis server is not responding."
+
+      # Database Alert
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is not responding."
+
+      # Trading Signal Quality
+      - alert: LowSignalConfidence
+        expr: avg(nikkotrader_signal_confidence) < 0.6
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low Signal Confidence"
+          description: "Average signal confidence is {{ $value }}, below optimal threshold." 

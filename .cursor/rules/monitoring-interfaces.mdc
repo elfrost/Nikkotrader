@@ -1,0 +1,50 @@
+# Monitoring et Interfaces Utilisateur
+
+## 🎛️ Interface Principale Unique : Grafana
+
+### 📱 Navigation Simplifiée
+**🎯 UNE SEULE URL principale** : `http://localhost:3001` (admin/admin123)
+
+```
+📊 Menu Grafana :
+├── 🏠 Dashboards
+    ├── 📁 "NIKKOTRADER V11"
+        ├── 🎯 "Overview" (PAGE PRINCIPALE)
+        └── 📈 "Strategy Performance" (Détails)
+```
+
+### 🔥 Dashboard Principal "Overview"
+- ✅ **Statut agents** (verts = système OK)
+- 📈 **Signaux temps réel** (graphique)
+- 💰 **P&L quotidien** (profit/perte)
+- 📊 **Win Rate global** (pourcentage réussite)
+- ⚡ **Trades actifs** (nombre en cours)
+- 🔄 **Refresh automatique** (5 secondes)
+
+### 📊 Dashboard "Strategy Performance"
+- 🎯 **Win rates par stratégie** (couleurs seuils)
+- 📈 **Trades par timeframe** (3min, 5min, 10min, 15min, 30min)
+- 🔥 **Top paires performantes** (heatmap)
+- ⏰ **Heures optimales trading** (analyse temporelle)
+- 📊 **Distribution confiance signaux** (histogramme)
+
+### 🔍 Interfaces Secondaires (Debug)
+- **Prometheus** : `http://localhost:9090` (métriques brutes)
+- **RabbitMQ** : `http://localhost:15672` (messages inter-agents)
+- **API Backend** : `http://localhost:8000` (endpoints techniques)
+
+### 📊 Métriques Prometheus Clés
+Configuration dans [prometheus.yml](mdc:monitoring/prometheus/prometheus.yml) :
+- `nikkotrader_trades_total{result="WIN"}` - Trades gagnants
+- `nikkotrader_signal_confidence` - Confiance des signaux
+- `nikkotrader_daily_pnl` - P&L quotidien
+- `nikkotrader_active_trades` - Trades en cours
+- `nikkotrader_drawdown_percentage` - Drawdown actuel
+
+### 🚀 Scripts de Démarrage
+- **Windows** : [start.bat](mdc:scripts/start.bat)
+- **Linux/Mac** : [start.sh](mdc:scripts/start.sh)
+- **Auto-création** : Fichier .env et dossiers
+- **Vérifications** : Services PostgreSQL, Redis, API
+alwaysApply: false
+---
